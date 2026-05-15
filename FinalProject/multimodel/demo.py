@@ -30,9 +30,6 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 
 
-# ==============================================================================
-# Config
-# ==============================================================================
 SEED             = 611
 NUM_CLASSES      = 60
 
@@ -49,15 +46,12 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 random.seed(SEED)
 torch.manual_seed(SEED)
 
-# Face detector — built into OpenCV, no extra install needed
+# Face detector — built into OpenCV
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
 
 
-# ==============================================================================
-# Model Definitions
-# ==============================================================================
 class MouthVideoCNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()

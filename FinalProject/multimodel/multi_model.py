@@ -9,19 +9,6 @@ Strategy: Late Fusion
   video frames    -> VideoModel.extract_features() -> [B, 512]  ──┐
                                                                     ├─ cat -> [B, 1024] -> classifier
   mel-spectrogram -> AudioModel.extract_features() -> [B, 512]  ──┘
-
-Dataset: 60 speakers, 20 samples each (1200 total), 80/20 split
-
-File layout expected:
-    multimodal_fusion.py
-    spectrogram_labels.csv
-    spectrograms/
-    vox_celeb_subset/
-        subset.csv
-        roi_cache/mediapipe_image_frames-32_size-64_seed-611/
-    saved_models/
-        video_cnn_V6_<ts>.pt
-        audioresnet.pth
 """
 
 from pathlib import Path
@@ -41,9 +28,6 @@ from torchmetrics.classification import (
 )
 
 
-# ==============================================================================
-# Config
-# ==============================================================================
 SEED        = 611
 NUM_CLASSES = 60
 BATCH_SIZE  = 8
@@ -53,13 +37,13 @@ LR_PAT      = 3
 EARLY_STOP  = 8
 MIN_EPOCHS  = 8
 
-# Austin's files (V6 — RGB)
+# Austin's
 VIDEO_CHECKPOINT = Path("saved_models/video_cnn_V6_2026-05-05_11-36-47.pt")
 VIDEO_CSV        = Path("./vox_celeb_subset/subset.csv")
 VIDEO_DATA_ROOT  = Path("./vox_celeb_subset/")
 ROI_CACHE_DIR    = Path("./vox_celeb_subset/roi_cache/mediapipe_image_frames-32_size-64_seed-611")
 
-# Alexander's files (AudioResNet)
+# Alex's
 AUDIO_CHECKPOINT = Path("saved_models/audioresnet.pth")
 AUDIO_CSV        = Path("spectrogram_labels.csv")
 
@@ -78,14 +62,11 @@ np.random.seed(SEED)
 torch.manual_seed(SEED)
 
 
-# ==============================================================================
-# 1. AUSTIN'S VIDEO MODEL V6 — RGB input, bidirectional GRU, 512-dim output
-# ==============================================================================
+# Video model
 class MouthVideoCNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         self.frame_encoder = nn.Sequential(
-            # Input = [3, 64, 64]  <- RGB now
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32), nn.LeakyReLU(0.1), nn.MaxPool2d(2),
 
@@ -96,7 +77,6 @@ class MouthVideoCNN(nn.Module):
             nn.BatchNorm2d(128), nn.LeakyReLU(0.1),
             nn.AdaptiveMaxPool2d((1, 1)),
         )
-        # bidirectional -> 256*2 = 512
         self.gru     = nn.GRU(input_size=128, hidden_size=256,
                                batch_first=True, bidirectional=True)
         self.dropout = nn.Dropout(0.4)
@@ -119,14 +99,12 @@ class MouthVideoCNN(nn.Module):
         x = self.frame_encoder(x)
         x = x.view(b, t, 128)
         gru_out, _ = self.gru(x)
-        x = gru_out.mean(dim=1)   # [B, 512]
+        x = gru_out.mean(dim=1) 
         x = self.dropout(x)
         return x
 
 
-# ==============================================================================
-# 2. ALEXANDER'S AUDIO MODEL — ResNet with residual blocks, 512-dim output
-# ==============================================================================
+# Audio model
 class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()
@@ -171,12 +149,11 @@ class AudioResNet(nn.Module):
         return self.fc(x)
 
     def extract_features(self, x):
-        """Returns 512-dim feature vector before classifier."""
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.gap(x).view(x.size(0), -1)   # [B, 512]
+        x = self.gap(x).view(x.size(0), -1)
         x = self.dropout(x)
         return x
 
@@ -220,7 +197,7 @@ class MultimodalFusionModel(nn.Module):
         fused = torch.cat([v, a], dim=1)                        # [B, 1024]
         return self.fusion_head(fused)
 
-# LOAD PRETRAIN WEIGHTS
+# Load pretrain weights
 def load_video_model(checkpoint_path, num_classes, device):
     model = MouthVideoCNN(num_classes=num_classes).to(device)
     ckpt  = torch.load(checkpoint_path, map_location=device)
@@ -233,7 +210,6 @@ def load_video_model(checkpoint_path, num_classes, device):
 
 def load_audio_model(checkpoint_path, num_classes, device):
     model = AudioResNet(num_classes=num_classes).to(device)
-    # Alexander saved plain state_dict
     state = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(state)
     model.eval()
@@ -241,7 +217,7 @@ def load_audio_model(checkpoint_path, num_classes, device):
     return model
 
 
-# DATASET
+# Dataset
 def fix_path(s):
     return Path(s.replace("\\", "/"))
 
@@ -330,9 +306,7 @@ def build_paired_rows(video_csv, roi_cache_dir, audio_csv, seed=611):
     return paired, label_to_idx
 
 
-# ==============================================================================
-# 6. TRAINING LOOP
-# ==============================================================================
+# Training
 def train_fusion(fusion_model, train_loader, val_loader,
                  epochs, lr, device, save_path, txt_path):
 
@@ -506,9 +480,7 @@ def train_fusion(fusion_model, train_loader, val_loader,
     print(f"Best macro F1 : {best_macro_f1*100:.2f}%")
 
 
-# ==============================================================================
-# 7. MAIN
-# ==============================================================================
+# Main
 if __name__ == "__main__":
 
     # Build paired dataset
