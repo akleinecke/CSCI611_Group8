@@ -1,192 +1,86 @@
-\# MouthVideoCNN Notebook
-
-
-
+# MouthVideoCNN Notebook
 This project trains and evaluates a video-based speaker identification model. The notebook loads short video clips, extracts mouth-region frame sequences, trains a custom CNN model, and compares it with a ResNet-18 baseline.
-
-
 
 The main notebook is:
 
-
-
-```text
-
+```
 VideoModel\_v7.ipynb
-
 ```
 
-
-
-\## Dataset
-
-
-
+## Dataset
 The original dataset is VoxCeleb2 from Hugging Face:
 
-
-
-```text
-
-https://huggingface.co/datasets/Reverb/voxceleb2
-
 ```
-
-
+https://huggingface.co/datasets/Reverb/voxceleb2
+```
 
 The full dataset is large, so this project expects a smaller local subset. Create that subset by running:
-
-
-
-```bash
-
-python make\_subset.py
-
 ```
-
-
+python make\_subset.py
+```
 
 After running the script, the project should contain this folder:
-
-
-
-```text
-
-vox\_celeb\_subset/
-
-├── subset.csv
-
-└── ...video files copied or arranged by make\_subset.py
-
 ```
-
-
+vox\_celeb\_subset/
+├── subset.csv
+└── ...video files copied or arranged by make\_subset.py
+```
 
 The notebook expects `subset.csv` to exist at:
-
-
-
-```text
-
-./vox\_celeb\_subset/subset.csv
-
 ```
-
-
+./vox\_celeb\_subset/subset.csv
+```
 
 The notebook also expects video paths in `subset.csv` to be relative to:
-
-
-
-```text
-
-./vox\_celeb\_subset/
-
 ```
-
-
+./vox\_celeb\_subset/
+```
 
 The CSV must include at least these columns:
 
-
-
-```text
-
+```
 mp4\_path
-
 label
-
 speaker\_id
-
 ```
 
-
-
-\## Project layout
-
-
+## Project layout
 
 Recommended file layout:
-
-
-
-```text
-
-project-folder/
-
-├── VideoModel\_v7.ipynb
-
-├── make\_subset.py
-
-├── README.md
-
-├── vox\_celeb\_subset/
-
-│   ├── subset.csv
-
-│   └── ...subset video files
-
-├── saved\_models/
-
-├── roi\_cache/
-
-└── facedetection\_model/
-
 ```
-
-
+project-folder/
+├── VideoModel\_v7.ipynb
+├── make\_subset.py
+├── README.md
+├── vox\_celeb\_subset/
+│   ├── subset.csv
+│   └── ...subset video files
+├── saved\_models/
+├── roi\_cache/
+└── facedetection\_model/
+```
 
 The `saved\_models/`, `roi\_cache/`, and `facedetection\_model/` folders are created or used by the notebook.
 
-
-
-\## Environment setup
-
-
-
+## Environment setup
 Create and activate a virtual environment.
 
-
-
 On macOS or Linux:
-
-
-
-```bash
-
-python -m venv .venv
-
-source .venv/bin/activate
-
 ```
-
-
+python -m venv .venv
+source .venv/bin/activate
+```
 
 On Windows PowerShell:
-
-
-
-```powershell
-
-python -m venv .venv
-
-.\\.venv\\Scripts\\Activate.ps1
-
 ```
-
-
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
 
 Install the required packages:
-
-
-
-```bash
-
-pip install jupyterlab notebook numpy matplotlib opencv-python mediapipe torch torchvision torchmetrics
-
 ```
-
-
+pip install jupyterlab notebook numpy matplotlib opencv-python mediapipe torch torchvision torchmetrics
+```
 
 If you want GPU support, install the PyTorch build that matches your CUDA version. The standard `pip install torch torchvision` command may install a CPU-only build depending on your system.
 
