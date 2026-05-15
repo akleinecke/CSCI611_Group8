@@ -1,0 +1,54 @@
+=== MODEL TRAINING SUMMARY ===
+
+Model Name: video_cnn_gru_3
+Timestamp: 2026-04-22_16-35-06
+Device: cuda
+
+---- DATASET ----
+Train size: 960
+Validation size: 240
+Num classes: 60
+
+---- HYPERPARAMETERS ----
+Epochs: 20
+Batch size: 8
+Learning rate: 0.001
+Frames per sample: 16
+Image size: 64
+
+---- FINAL METRICS ----
+Train Loss: 1.6499
+Train Accuracy: 0.5792
+Validation Loss: 2.0813
+Validation Accuracy: 0.4625
+
+---- HISTORY ----
+
+Train Losses: [4.117786290248235, 3.8948766390482583, 3.7290266036987303, 3.562189894914627, 3.410158415635427, 3.2582233786582946, 3.125608124335607, 2.983287012577057, 2.8267919212579726, 2.7533874024947482, 2.63359611928463, 2.513342747092247, 2.448887573679288, 2.36878296037515, 2.274494867523511, 2.2014876822630565, 2.06192376712958, 1.9520279298226038, 1.9062695826093357, 1.649885609249274]
+
+Val Losses: [3.9826547066370646, 3.8413670539855955, 3.737925124168396, 3.4963613033294676, 3.480011463165283, 3.26040092309316, 3.4754673639933267, 3.08103666305542, 2.881576156616211, 2.8476516167322794, 2.7183255195617675, 2.641424020131429, 2.597405008474986, 2.520463526248932, 2.6022437731424968, 2.377966264883677, 2.323592694600423, 2.391234540939331, 2.460663449764252, 2.0812839031219483]
+
+Train Accuracies: [0.030208333333333334, 0.046875, 0.059375, 0.1, 0.12916666666666668, 0.16875, 0.19583333333333333, 0.24479166666666666, 0.2791666666666667, 0.2875, 0.3229166666666667, 0.34375, 0.3572916666666667, 0.3697916666666667, 0.4010416666666667, 0.425, 0.471875, 0.4864583333333333, 0.4895833333333333, 0.5791666666666667]
+
+Val Accuracies: [0.025, 0.05, 0.04583333333333333, 0.14166666666666666, 0.10833333333333334, 0.17916666666666667, 0.12083333333333333, 0.19166666666666668, 0.24166666666666667, 0.2625, 0.2708333333333333, 0.2833333333333333, 0.3, 0.3541666666666667, 0.3333333333333333, 0.35, 0.375, 0.3541666666666667, 0.3416666666666667, 0.4625]
+
+
+---- MODEL ARCHITECTURE ----
+MouthVideoCNN(
+  (frame_encoder): Sequential(
+    (0): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): LeakyReLU(negative_slope=0.1)
+    (3): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (4): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (5): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (6): LeakyReLU(negative_slope=0.1)
+    (7): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+    (8): Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (9): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (10): LeakyReLU(negative_slope=0.1)
+    (11): AdaptiveMaxPool2d(output_size=(1, 1))
+  )
+  (gru): GRU(128, 128, batch_first=True)
+  (fc): Linear(in_features=128, out_features=60, bias=True)
+)
